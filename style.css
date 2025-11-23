@@ -1,3 +1,5 @@
+/* ---------- Design tokens (from Loyalty series) ---------- */
+
 :root {
   --bg: #0b0c0f;
   --bg-elevated: #151821;
@@ -7,11 +9,9 @@
   --text-main: #f8f9fb;
   --text-muted: #a5adbf;
   --danger: #ff6b81;
-  --danger-soft: rgba(255, 107, 129, 0.14);
-  --warning: #facc6b;
-  --warning-soft: rgba(250, 204, 107, 0.14);
+  --danger-soft: rgba(255, 107, 129, 0.12);
   --success: #32d296;
-  --success-soft: rgba(50, 210, 150, 0.14);
+  --success-soft: rgba(50, 210, 150, 0.12);
   --radius-lg: 18px;
   --radius-md: 10px;
   --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.55);
@@ -20,6 +20,8 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
 }
+
+/* ---------- Global ---------- */
 
 *,
 *::before,
@@ -36,11 +38,12 @@ body {
 
 body {
   font-family: var(--font-sans);
-  background: radial-gradient(circle at top, #171b26 0, #05060a 45%, #05060a 100%);
+  background: radial-gradient(circle at top, #171b26 0, #05060a 48%, #05060a 100%);
   color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ---------- Page header (shared across prototypes) ---------- */
+/* ---------- Layout ---------- */
 
 .page-header {
   padding: 32px 24px 12px;
@@ -63,14 +66,12 @@ body {
   font-size: 15px;
 }
 
-/* ---------- Main two-panel layout ---------- */
-
 .main {
   max-width: 1100px;
   margin: 0 auto 32px;
   padding: 0 24px 24px;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.55fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
   gap: 20px;
 }
 
@@ -78,6 +79,25 @@ body {
   .main {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* ---------- Footer ---------- */
+
+.page-footer {
+  border-top: 1px solid var(--border-subtle);
+  padding: 12px 24px 22px;
+  text-align: center; /* center the series line */
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.page-footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.page-footer a:hover {
+  text-decoration: underline;
 }
 
 /* ---------- Panels ---------- */
@@ -88,6 +108,14 @@ body {
   border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-soft);
   padding: 18px 18px 16px;
+}
+
+.panel-input {
+  min-height: 360px;
+}
+
+.panel-results {
+  min-height: 360px;
 }
 
 .panel-header {
@@ -103,23 +131,64 @@ body {
   font-size: 18px;
 }
 
-/* Left = setup; right = summary.
-   (Nothing special yet, but easy to tweak later.) */
-
-.panel-input {}
-.panel-results {}
-
-/* ---------- Scenario row (label + select + button) ---------- */
+/* ---------- Controls / fields (from sandbox, recolored) ---------- */
 
 .panel-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
-.scenario-label {
+.help-text {
+  margin: 0 0 12px;
   font-size: 13px;
+  color: var(--text-muted);
+}
+
+.field-group {
+  margin-bottom: 14px;
+}
+
+.field-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.field-help {
+  margin: 2px 0 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.text-input {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: #05060b;
+  color: var(--text-main);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  padding: 8px 10px;
+  resize: vertical;
+  outline: none;
+}
+
+.text-input::placeholder {
+  color: #6b7280;
+}
+
+.text-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-soft);
+}
+
+/* Scenario select */
+
+.scenario-label {
+  font-size: 12px;
   color: var(--text-muted);
 }
 
@@ -129,7 +198,7 @@ body {
   background: #05060b;
   color: var(--text-main);
   font-size: 13px;
-  padding: 6px 10px;
+  padding: 5px 10px;
   outline: none;
 }
 
@@ -138,91 +207,66 @@ body {
   box-shadow: 0 0 0 1px var(--accent-soft);
 }
 
-/* ---------- Help + field layout ---------- */
+/* Optional inline checkbox row */
 
-.help-text {
-  margin: 0 0 10px;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.field-group {
-  margin-bottom: 12px;
-}
-
-.field-label {
-  display: block;
-  font-size: 13px;
-  margin-bottom: 4px;
-  color: var(--text-main);
-}
-
-.field-hint {
-  margin: 0 0 6px;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-/* Textareas for task / rules / context */
-
-.text-input {
-  width: 100%;
-  min-height: 80px;
-  padding: 8px 10px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  background: #05060b;
-  color: var(--text-main);
-  font-size: 13px;
-  font-family: var(--font-mono);
-  resize: vertical;
-  outline: none;
-}
-
-.text-input::placeholder {
-  color: var(--text-muted);
-}
-
-.text-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent-soft);
-}
-
-/* ---------- Run button + status ---------- */
-
-.panel-footer {
-  margin-top: 10px;
+.field-inline {
   display: flex;
   align-items: center;
-  gap: 10px;
 }
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.checkbox-label input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
+/* ---------- Buttons (from loyalty) ---------- */
 
 .btn {
   border-radius: 999px;
-  padding: 8px 16px;
-  border: 1px solid var(--border-subtle);
-  background: #07090f;
-  color: var(--text-main);
+  border: none;
+  padding: 7px 14px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: transform 0.06s ease, box-shadow 0.08s ease,
-    background 0.08s ease, border-color 0.08s ease;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.08s ease;
 }
 
 .btn-primary {
   background: var(--accent);
-  border-color: var(--accent);
-  color: #0b0c0f;
+  color: #130c12;
+  box-shadow: 0 8px 20px rgba(244, 167, 185, 0.38);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(244, 167, 185, 0.52);
 }
 
 .btn-secondary {
-  background: #05060b;
+  background: rgba(34, 39, 54, 0.9);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-secondary:hover {
+  background: rgba(43, 49, 66, 0.95);
+}
+
+.panel-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .parse-status {
@@ -230,10 +274,10 @@ body {
   color: var(--text-muted);
 }
 
-/* ---------- Behavior Summary (right panel) ---------- */
+/* ---------- Behavior summary (right panel) ---------- */
 
 .summary {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .summary-badge {
@@ -250,89 +294,70 @@ body {
   color: var(--text-muted);
 }
 
-.summary-badge-stable {
+.summary-badge-ok {
   background: var(--success-soft);
   color: var(--success);
 }
 
 .summary-badge-drifted {
-  background: var(--warning-soft);
-  color: var(--warning);
-}
-
-.summary-badge-severe {
   background: var(--danger-soft);
   color: var(--danger);
 }
 
-.summary-meta {
-  margin: 4px 0 0;
-  font-size: 12px;
-  color: var(--text-muted);
+.summary-badge .count {
+  font-weight: 600;
 }
 
-/* Sections like “Interpreted Task / Rules / Context …” */
-
-.summary-sections {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
-  margin-top: 10px;
-}
+/* Sections inside the summary panel */
 
 .summary-section {
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  background: rgba(7, 9, 15, 0.96);
-  padding: 10px 11px 9px;
+  margin-bottom: 10px;
 }
 
 .summary-section h3 {
   margin: 0 0 4px;
-  font-size: 13px;
-  color: var(--text-main);
+  font-size: 14px;
 }
 
 .summary-section p,
 .summary-section ul {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
 }
 
 .summary-section ul {
-  padding-left: 16px;
+  padding-left: 18px;
 }
 
-/* Execution trace */
+/* Execution trace block */
 
-.trace-box {
-  margin-top: 10px;
+.raw-output {
+  margin-top: 12px;
+}
+
+#raw-trace {
+  margin: 0;
+  padding: 8px 10px;
   border-radius: var(--radius-md);
+  background: #05060b;
   border: 1px solid var(--border-subtle);
-  background: rgba(7, 9, 15, 0.96);
-  padding: 10px 11px;
-  font-family: var(--font-mono);
   font-size: 12px;
+  font-family: var(--font-mono);
   color: var(--text-muted);
   white-space: pre-wrap;
 }
 
-/* ---------- Footer ---------- */
+/* ---------- Responsive tweaks ---------- */
 
-.page-footer {
-  border-top: 1px solid var(--border-subtle);
-  padding: 12px 24px 22px;
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 13px;
-}
+@media (max-width: 640px) {
+  .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-.page-footer a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.page-footer a:hover {
-  text-decoration: underline;
+  .panel-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

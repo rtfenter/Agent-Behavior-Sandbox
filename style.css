@@ -1,4 +1,38 @@
-/* ========== Base Layout ========== */
+/* ------------------------------------------------------
+   GLOBAL TOKENS (exactly consistent with other prototypes)
+------------------------------------------------------- */
+
+:root {
+  --bg: #0b0c0f;
+  --bg-elevated: #151821;
+  --border-subtle: #2b2f3b;
+  --accent: #f4a7b9;
+  --accent-soft: rgba(244, 167, 185, 0.18);
+  --text-main: #f8f9fb;
+  --text-muted: #a5adbf;
+
+  --danger: #ff6b81;
+  --danger-soft: rgba(255, 107, 129, 0.14);
+
+  --warning: #facc6b;
+  --warning-soft: rgba(250, 204, 107, 0.14);
+
+  --success: #32d296;
+  --success-soft: rgba(50, 210, 150, 0.14);
+
+  --radius-lg: 18px;
+  --radius-md: 10px;
+  --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.55);
+
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+/* ------------------------------------------------------
+   BASE LAYOUT (matches Loyalty + Drift Map style EXACTLY)
+------------------------------------------------------- */
 
 *,
 *::before,
@@ -6,64 +40,71 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  background: radial-gradient(circle at top, #020617 0, #000000 65%);
-  color: #e5e7eb;
-  -webkit-font-smoothing: antialiased;
+  padding: 0;
+  height: 100%;
 }
 
-/* ========== Page Header ========== */
+body {
+  font-family: var(--font-sans);
+  background: radial-gradient(circle at top, #171b26 0, #05060a 45%, #05060a 100%);
+  color: var(--text-main);
+}
+
+/* Page header */
 
 .page-header {
-  padding: 24px 16px 10px;
+  padding: 32px 24px 12px;
 }
 
 .page-header-inner {
-  max-width: 1120px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
 .page-header h1 {
-  margin: 0 0 6px;
-  font-size: 2.1rem;
-  letter-spacing: -0.03em;
-  color: #f9fafb;
+  margin: 0 0 8px;
+  font-size: 28px;
+  letter-spacing: 0.02em;
 }
 
 .tagline {
   margin: 0;
-  font-size: 0.98rem;
-  color: #9ca3af;
+  color: var(--text-muted);
+  font-size: 15px;
 }
 
-/* ========== Main Layout ========== */
+/* Main layout: identical grid skeleton */
 
 .main {
-  max-width: 1120px;
+  max-width: 1100px;
   margin: 0 auto 32px;
-  padding: 0 16px 32px;
+  padding: 0 24px 24px;
   display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.55fr);
   gap: 20px;
 }
 
-@media (min-width: 900px) {
+/* Responsive */
+
+@media (max-width: 900px) {
   .main {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.1fr);
-    align-items: flex-start;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-/* ========== Panels ========== */
+/* ------------------------------------------------------
+   PANEL CONTAINERS
+------------------------------------------------------- */
 
 .panel {
-  background: radial-gradient(circle at top left, #111827 0, #020617 60%);
-  border-radius: 26px;
-  padding: 20px 22px 22px;
-  border: 1px solid rgba(15, 23, 42, 0.9);
-  box-shadow: 0 26px 60px rgba(15, 23, 42, 0.9);
+  background: linear-gradient(135deg, rgba(20, 24, 35, 0.98), rgba(8, 10, 16, 0.98));
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-soft);
+  padding: 18px 18px 16px;
 }
 
 .panel-header {
@@ -71,296 +112,188 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .panel-header h2 {
   margin: 0;
-  font-size: 1.02rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: #f9fafb;
+  font-size: 18px;
+  color: var(--text-main);
 }
 
-/* ========== Panel Actions (scenario select + button) ========== */
+/* ------------------------------------------------------
+   FORM FIELDS & INPUTS
+------------------------------------------------------- */
 
-.panel-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-.scenario-label {
-  font-size: 0.78rem;
-  color: #9ca3af;
-}
-
-.scenario-select {
-  border-radius: 999px;
-  border: 1px solid #1f2937;
-  background: #020617;
-  color: #e5e7eb;
-  font-size: 0.82rem;
-  padding: 6px 12px;
-}
-
-.scenario-select:focus {
-  outline: none;
-  border-color: #f9a8d4;
-  box-shadow: 0 0 0 1px rgba(249, 168, 212, 0.35);
-}
-
-/* ========== Help Text & Fields ========== */
-
-.help-text {
-  margin: 2px 0 12px;
-  font-size: 0.86rem;
-  color: #9ca3af;
-}
-
-.field-group {
+.field {
   margin-bottom: 14px;
 }
 
-.field-label {
+.field label {
   display: block;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #e5e7eb;
+  font-size: 13px;
+  margin-bottom: 4px;
+  color: var(--text-main);
 }
 
-.field-help {
-  margin: 2px 0 6px;
-  font-size: 0.78rem;
-  color: #9ca3af;
-}
-
-/* Textareas (Task / Rules / Context) */
-
-.text-input {
+.text-input,
+.textarea,
+.select {
   width: 100%;
-  border-radius: 16px;
-  border: 1px solid #1f2937;
-  background: #020617;
-  color: #e5e7eb;
-  font-size: 0.9rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
-  padding: 10px 12px;
-  resize: vertical;
-  min-height: 80px;
-}
-
-.text-input::placeholder {
-  color: #6b7280;
-}
-
-.text-input:focus {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: #05060b;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 8px 10px;
   outline: none;
-  border-color: #f9a8d4;
-  box-shadow: 0 0 0 1px rgba(249, 168, 212, 0.35);
 }
 
-/* Checkbox */
+.textarea {
+  min-height: 85px;
+  resize: vertical;
+}
 
-.field-inline {
+.select:focus,
+.text-input:focus,
+.textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-soft);
+}
+
+/* ------------------------------------------------------
+   BUTTONS — identical to Drift Map buttons
+------------------------------------------------------- */
+
+.button-row {
+  margin-top: 14px;
   display: flex;
-  align-items: center;
-}
-
-.checkbox-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
-  color: #d1d5db;
-}
-
-.checkbox-label input[type="checkbox"] {
-  accent-color: #f9a8d4;
-}
-
-/* ========== Buttons ========== */
-
-.btn {
-  border-radius: 999px;
-  border: none;
-  font-size: 0.86rem;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 8px 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: transform 0.05s ease-out, box-shadow 0.08s ease-out,
-    filter 0.08s ease-out;
-}
-
-.btn-primary {
-  background: #f9739a;
-  color: #111827;
-  box-shadow: 0 12px 30px rgba(249, 115, 155, 0.55);
-}
-
-.btn-primary:hover {
-  filter: brightness(1.03);
-  transform: translateY(-1px);
-}
-
-.btn-secondary {
-  background: #020617;
-  color: #e5e7eb;
-  border: 1px solid #1f2937;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.6);
-}
-
-.btn-secondary:hover {
-  filter: brightness(1.03);
-  transform: translateY(-1px);
-}
-
-/* Footer section in left panel */
-
-.panel-footer {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
   gap: 10px;
 }
 
-.parse-status {
-  font-size: 0.8rem;
-  color: #9ca3af;
+.btn {
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border-subtle);
+  background: #07090f;
+  color: var(--text-main);
+  transition: transform 0.06s ease, box-shadow 0.08s ease;
 }
 
-/* ========== Behavior Summary (right panel) ========== */
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
 
-.summary {
+.btn-primary {
+  background: var(--accent);
+  color: #0b0c0f;
+  border-color: var(--accent);
+}
+
+/* ------------------------------------------------------
+   OUTPUT SUMMARY / BADGES
+------------------------------------------------------- */
+
+.summary-softbox {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: rgba(7, 9, 15, 0.96);
+  padding: 10px 11px;
   margin-bottom: 14px;
 }
 
-/* Top pill row similar to the Points Simulator "chips" */
-
 .summary-badge {
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 13px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(31, 41, 55, 0.9);
-  background: linear-gradient(
-    135deg,
-    rgba(55, 65, 81, 0.65),
-    rgba(15, 23, 42, 0.95)
-  );
-  font-size: 0.84rem;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 
-.summary-badge-idle {
-  color: #9ca3af;
+.summary-badge-stable {
+  background: var(--success-soft);
+  color: var(--success);
 }
 
-/* Mode / Style / Drift “chips” */
-
-.summary-pill {
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  font-weight: 600;
+.summary-badge-drifted {
+  background: var(--warning-soft);
+  color: var(--warning);
 }
 
-.summary-pill-mode {
-  background: radial-gradient(circle at top, #4c1d95, #312e81);
-  color: #e0e7ff;
+.summary-badge-severe {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
-.summary-pill-style {
-  background: radial-gradient(circle at top, #064e3b, #065f46);
-  color: #bbf7d0;
+/* ------------------------------------------------------
+   RESULT SECTIONS (Identical card style to Drift Map)
+------------------------------------------------------- */
+
+.result-card {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: rgba(7, 9, 15, 0.96);
+  padding: 12px 12px;
+  margin-bottom: 10px;
 }
 
-/* ========== Result Sections (grid of bullets) ========== */
-
-.checks-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
-  margin-bottom: 16px;
+.result-card h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: var(--text-main);
 }
 
-@media (min-width: 750px) {
-  .checks-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-.check-group h3 {
-  margin: 0 0 4px;
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: #f9fafb;
-}
-
-.issues-list {
-  list-style: none;
+.result-card p,
+.result-card ul {
   margin: 0;
-  padding-left: 0;
-  font-size: 0.84rem;
-  color: #e5e7eb;
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
-.issues-list li {
-  padding: 4px 0;
-  border-bottom: 1px dashed rgba(55, 65, 81, 0.7);
+.result-card ul {
+  padding-left: 16px;
 }
 
-.issues-list li:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
+/* ------------------------------------------------------
+   EXECUTION TRACE
+------------------------------------------------------- */
 
-/* ========== Execution Trace ========== */
-
-.raw-output h3 {
-  margin: 8px 0 6px;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-#raw-trace {
-  margin: 0;
+.trace-box {
+  margin-top: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: rgba(7, 9, 15, 0.96);
   padding: 10px 12px;
-  border-radius: 18px;
-  background: #020617;
-  border: 1px solid #1f2937;
-  font-size: 0.8rem;
-  line-height: 1.45;
-  color: #e5e7eb;
+  font-family: var(--font-mono);
+  font-size: 12px;
   white-space: pre-wrap;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+  color: var(--text-muted);
 }
 
-/* ========== Footer ========== */
+/* ------------------------------------------------------
+   FOOTER
+------------------------------------------------------- */
 
 .page-footer {
-  max-width: 1120px;
-  margin: 0 auto 32px;
-  padding: 0 16px;
-  font-size: 0.82rem;
-  color: #6b7280;
+  border-top: 1px solid var(--border-subtle);
+  padding: 12px 24px 22px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
 .page-footer a {
-  color: #e5e7eb;
+  color: var(--accent);
   text-decoration: none;
-  border-bottom: 1px dotted rgba(248, 250, 252, 0.4);
 }
 
 .page-footer a:hover {
-  border-bottom-style: solid;
+  text-decoration: underline;
 }

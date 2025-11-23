@@ -38,7 +38,7 @@ body {
 
 body {
   font-family: var(--font-sans);
-  background: radial-gradient(circle at top, #171b26 0, #05060a 48%, #05060a 100%);
+  background: radial-gradient(circle at top, #0b0c0f 0, #05060a 48%, #05060a 100%);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
 }

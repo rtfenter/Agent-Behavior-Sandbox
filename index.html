@@ -17,132 +17,123 @@
   </header>
 
   <main class="main">
-    <!-- Left panel: Inputs -->
+    <!-- LEFT: Agent setup -->
     <section class="panel panel-input">
       <div class="panel-header">
         <h2>Agent Setup</h2>
         <div class="panel-actions">
-          <label for="scenario-select" class="scenario-label">Scenario:</label>
+          <label class="scenario-label" for="scenario-select">Scenario:</label>
           <select id="scenario-select" class="scenario-select">
-            <option value="none">Start blank</option>
-            <option value="triage">Example – On-call Triage</option>
-            <option value="conflict">Example – Conflicting Priorities</option>
+            <option value="blank">Start blank</option>
+            <option value="oncall">Example – On-call Triage</option>
+            <option value="feature">Example – Feature Rollout vs Reliability</option>
           </select>
           <button id="load-scenario-btn" class="btn btn-secondary">Load Scenario</button>
         </div>
       </div>
 
       <p class="help-text">
-        Describe a task, the rules the agent must follow, and the current context.  
+        Describe a task, the rules the agent must follow, and the current context.
         Then click <strong>Run Agent</strong> to see how it behaves.
       </p>
 
       <div class="field-group">
-        <label for="task-input" class="field-label">Task</label>
-        <p class="field-help">
-          What is the agent being asked to do?
-        </p>
+        <span class="field-label">Task</span>
+        <p class="field-help">What is the agent being asked to do?</p>
         <textarea
           id="task-input"
           class="text-input"
           rows="4"
-          spellcheck="false"
-          placeholder="Example: Prioritize incidents in the on-call queue for the next 2 hours."
+          placeholder="Example: Prioritize incidents in the on-call queue for the next 2 hours and decide what to work on first."
         ></textarea>
       </div>
 
       <div class="field-group">
-        <label for="rules-input" class="field-label">Rules &amp; Constraints</label>
+        <span class="field-label">Rules &amp; Constraints</span>
         <p class="field-help">
           One rule per line. Use words like &quot;must&quot;, &quot;never&quot;, &quot;cannot&quot;, or &quot;avoid&quot; for hard constraints.
         </p>
         <textarea
           id="rules-input"
           class="text-input"
-          rows="6"
-          spellcheck="false"
+          rows="4"
           placeholder="- Must protect production traffic first&#10;- Never deploy unreviewed code&#10;- Prefer resolving high-severity issues before low-severity ones"
         ></textarea>
       </div>
 
       <div class="field-group">
-        <label for="context-input" class="field-label">Context &amp; Signals</label>
+        <span class="field-label">Context &amp; Signals</span>
         <p class="field-help">
-          Environment, signals, and any drift — SLAs, user impact, outages, deadlines, noise.
+          Observations, SLAs, incident pressure, or other signals the agent is aware of.
         </p>
         <textarea
           id="context-input"
           class="text-input"
-          rows="5"
-          spellcheck="false"
-          placeholder="Example: High traffic. One P1 incident impacting customers. Several low-priority feature requests in the backlog."
+          rows="4"
+          placeholder="- P1 incident active impacting 20% of traffic&#10;- Feature launch scheduled for tomorrow&#10;- Error budget nearly exhausted for Service A"
         ></textarea>
       </div>
 
-      <div class="field-group field-inline">
+      <div class="panel-footer">
         <label class="checkbox-label">
           <input type="checkbox" id="simulate-drift" />
-          <span>Simulate drift (agent ignores one soft rule)</span>
+          Simulate drifted behavior
         </label>
-      </div>
-
-      <div class="panel-footer">
-        <button id="run-agent-btn" class="btn btn-primary">Run Agent</button>
-        <span id="run-status" class="parse-status" aria-live="polite"></span>
+        <button id="run-agent" class="btn btn-primary">Run Agent</button>
+        <span id="parse-status" class="parse-status" aria-live="polite"></span>
       </div>
     </section>
 
-    <!-- Right panel: Results -->
+    <!-- RIGHT: Behavior summary -->
     <section class="panel panel-results">
       <div class="panel-header">
         <h2>Behavior Summary</h2>
       </div>
 
-      <div id="summary" class="summary">
-        <div class="summary-badge summary-badge-idle">
-          Agent has not been run yet.
+      <div class="summary">
+        <div id="summary-badge" class="summary-badge summary-badge-idle">
+          <span id="summary-badge-label">Agent has not been run yet.</span>
         </div>
       </div>
 
-      <div class="checks-grid">
-        <div class="check-group">
-          <h3>Interpreted Task</h3>
-          <ul id="task-interpretation" class="issues-list"></ul>
-        </div>
+      <div class="summary-section">
+        <h3>Interpreted Task</h3>
+        <p id="interpreted-task" class="summary-text">
+          The agent’s understanding of what it’s actually being asked to optimize.
+        </p>
+      </div>
 
-        <div class="check-group">
-          <h3>Rules &amp; Constraints Applied</h3>
-          <ul id="rules-applied" class="issues-list"></ul>
-        </div>
+      <div class="summary-section">
+        <h3>Rules &amp; Constraints Applied</h3>
+        <ul id="rules-applied" class="summary-list">
+          <li>No rules processed yet.</li>
+        </ul>
+      </div>
 
-        <div class="check-group">
-          <h3>Context &amp; Drift Signals</h3>
-          <ul id="context-signals" class="issues-list"></ul>
-        </div>
+      <div class="summary-section">
+        <h3>Context &amp; Drift Signals</h3>
+        <ul id="context-signals" class="summary-list">
+          <li>No context signals analyzed yet.</li>
+        </ul>
+      </div>
 
-        <div class="check-group">
-          <h3>Decision &amp; Rationale</h3>
-          <ul id="decision-rationale" class="issues-list"></ul>
-        </div>
+      <div class="summary-section">
+        <h3>Decision &amp; Rationale</h3>
+        <p id="decision" class="summary-text">
+          Once the agent runs, this will describe its primary decision and why it chose that behavior.
+        </p>
       </div>
 
       <div class="raw-output">
         <h3>Execution Trace</h3>
-        <pre id="raw-trace"></pre>
+        <pre id="raw-trace">Run the agent to see a step-by-step trace of how rules and context were interpreted.</pre>
       </div>
     </section>
   </main>
 
   <footer class="page-footer">
     <p>
-      Part of the
-      <a
-        href="https://github.com/rtfenter/Applied-Intelligence-Systems-Series"
-        target="_blank"
-        rel="noreferrer"
-      >
-        Applied Intelligence Systems Series
-      </a>.
+      Part of the <strong>Applied Intelligence Systems</strong> series.
     </p>
   </footer>
 

@@ -1,20 +1,20 @@
-/* ---------- Design tokens (from Loyalty series) ---------- */
+/* ---------- Design tokens: Warm cinematic black theme ---------- */
 
 :root {
-  --bg: #0b0c0f;
-  --bg-elevated: #151821;
-  --border-subtle: #2b2f3b;
+  --bg: #080609;
+  --bg-elevated: #151019;
+  --border-subtle: #3a313f;
   --accent: #f4a7b9;
-  --accent-soft: rgba(244, 167, 185, 0.18);
-  --text-main: #f8f9fb;
-  --text-muted: #a5adbf;
+  --accent-soft: rgba(244, 167, 185, 0.2);
+  --text-main: #f8f4fb;
+  --text-muted: #b4a8c0;
   --danger: #ff6b81;
-  --danger-soft: rgba(255, 107, 129, 0.12);
+  --danger-soft: rgba(255, 107, 129, 0.18);
   --success: #32d296;
-  --success-soft: rgba(50, 210, 150, 0.12);
+  --success-soft: rgba(50, 210, 150, 0.18);
   --radius-lg: 18px;
   --radius-md: 10px;
-  --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.55);
+  --shadow-soft: 0 22px 55px rgba(0, 0, 0, 0.75);
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
     "Segoe UI", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
@@ -38,7 +38,7 @@ body {
 
 body {
   font-family: var(--font-sans);
-  background: radial-gradient(circle at top, #0b0c0f 0, #05060a 48%, #05060a 100%);
+  background: radial-gradient(circle at top, #141016 0, #080609 40%, #050305 100%);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
 }
@@ -86,7 +86,7 @@ body {
 .page-footer {
   border-top: 1px solid var(--border-subtle);
   padding: 12px 24px 22px;
-  text-align: center; /* center the series line */
+  text-align: center;
   color: var(--text-muted);
   font-size: 13px;
 }
@@ -103,7 +103,7 @@ body {
 /* ---------- Panels ---------- */
 
 .panel {
-  background: linear-gradient(135deg, rgba(20, 24, 35, 0.98), rgba(8, 10, 16, 0.98));
+  background: radial-gradient(circle at top left, #1c151f 0, #0a060c 55%);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-soft);
@@ -131,7 +131,7 @@ body {
   font-size: 18px;
 }
 
-/* ---------- Controls / fields (from sandbox, recolored) ---------- */
+/* ---------- Controls / fields ---------- */
 
 .panel-actions {
   display: flex;
@@ -167,7 +167,7 @@ body {
   width: 100%;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
-  background: #05060b;
+  background: #070309;
   color: var(--text-main);
   font-size: 13px;
   font-family: var(--font-mono);
@@ -177,7 +177,7 @@ body {
 }
 
 .text-input::placeholder {
-  color: #6b7280;
+  color: #6b6473;
 }
 
 .text-input:focus {
@@ -195,7 +195,7 @@ body {
 .scenario-select {
   border-radius: 999px;
   border: 1px solid var(--border-subtle);
-  background: #05060b;
+  background: #070309;
   color: var(--text-main);
   font-size: 13px;
   padding: 5px 10px;
@@ -207,7 +207,7 @@ body {
   box-shadow: 0 0 0 1px var(--accent-soft);
 }
 
-/* Optional inline checkbox row */
+/* Checkbox */
 
 .field-inline {
   display: flex;
@@ -226,7 +226,7 @@ body {
   accent-color: var(--accent);
 }
 
-/* ---------- Buttons (from loyalty) ---------- */
+/* ---------- Buttons ---------- */
 
 .btn {
   border-radius: 999px;
@@ -243,28 +243,29 @@ body {
 
 .btn-primary {
   background: var(--accent);
-  color: #130c12;
-  box-shadow: 0 8px 20px rgba(244, 167, 185, 0.38);
+  color: #140910;
+  box-shadow: 0 10px 26px rgba(244, 167, 185, 0.5);
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(244, 167, 185, 0.52);
+  box-shadow: 0 14px 32px rgba(244, 167, 185, 0.65);
 }
 
 .btn-secondary {
-  background: rgba(34, 39, 54, 0.9);
+  background: rgba(34, 26, 43, 0.95);
   color: var(--text-main);
   border: 1px solid var(--border-subtle);
 }
 
 .btn-secondary:hover {
-  background: rgba(43, 49, 66, 0.95);
+  background: rgba(44, 32, 56, 1);
 }
 
 .panel-footer {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 12px;
 }
@@ -287,10 +288,11 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  border: 1px solid var(--border-subtle);
 }
 
 .summary-badge-idle {
-  background: rgba(26, 30, 42, 0.9);
+  background: rgba(21, 16, 26, 0.9);
   color: var(--text-muted);
 }
 
@@ -308,8 +310,6 @@ body {
   font-weight: 600;
 }
 
-/* Sections inside the summary panel */
-
 .summary-section {
   margin-bottom: 10px;
 }
@@ -319,33 +319,47 @@ body {
   font-size: 14px;
 }
 
-.summary-section p,
-.summary-section ul {
+.summary-text {
   margin: 0;
   font-size: 13px;
   color: var(--text-muted);
 }
 
-.summary-section ul {
+.summary-list {
+  margin: 0;
   padding-left: 18px;
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
-/* Execution trace block */
+.summary-list li {
+  margin-bottom: 3px;
+}
+
+/* ---------- Execution trace ---------- */
 
 .raw-output {
   margin-top: 12px;
+}
+
+.raw-output h3 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 #raw-trace {
   margin: 0;
   padding: 8px 10px;
   border-radius: var(--radius-md);
-  background: #05060b;
+  background: #070309;
   border: 1px solid var(--border-subtle);
   font-size: 12px;
   font-family: var(--font-mono);
   color: var(--text-muted);
   white-space: pre-wrap;
+  max-height: 260px;
+  overflow: auto;
 }
 
 /* ---------- Responsive tweaks ---------- */

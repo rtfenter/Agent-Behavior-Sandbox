@@ -1,460 +1,203 @@
-// Agent Behavior Sandbox
-// Tiny deterministic "agent" to demonstrate how tasks, rules, and context
-// shape behavior. Everything runs client-side.
+console.log("Agent Behavior Sandbox loading...");
 
-const scenarioSelect = document.getElementById("scenario-select");
-const loadScenarioBtn = document.getElementById("load-scenario-btn");
-const runAgentBtn = document.getElementById("run-agent-btn");
-const driftCheckbox = document.getElementById("simulate-drift");
-
-const taskInput = document.getElementById("task-input");
-const rulesInput = document.getElementById("rules-input");
-const contextInput = document.getElementById("context-input");
-
-const runStatusEl = document.getElementById("run-status");
-const summaryEl = document.getElementById("summary");
-const taskListEl = document.getElementById("task-interpretation");
-const rulesListEl = document.getElementById("rules-applied");
-const contextListEl = document.getElementById("context-signals");
-const decisionListEl = document.getElementById("decision-rationale");
-const rawTraceEl = document.getElementById("raw-trace");
-
-// --- Example scenarios -------------------------------------------------------
+// --------- Scenarios ---------
 
 const SCENARIOS = {
-  triage: {
+  oncall: {
     task:
       "Prioritize incidents in the on-call queue for the next 2 hours and decide what to work on first.",
     rules: [
       "Must protect production traffic before anything else.",
       "Never ignore a P1 incident.",
-      "Prefer resolving high-severity issues before low-severity ones.",
-      "Avoid starting new feature work while there is an active P1."
+      "Avoid starting new feature work while there is an active P1.",
+      "Prefer resolving high-severity issues before low-severity ones."
     ].join("\n"),
-    context:
-      "High traffic. One P1 incident impacting paying customers. Two P3 feature requests from internal teams. SLA for P1 is 30 minutes. No current deployments running."
+    context: [
+      "P1 incident impacting 20% of production traffic.",
+      "New feature launch scheduled for tomorrow.",
+      "Error budget nearly exhausted for Service A."
+    ].join("\n")
   },
-  conflict: {
+  feature: {
     task:
-      "Plan what to do for the next sprint: handle incidents or ship a new feature launch.",
+      "Plan rollout for the new recommendation model while preserving reliability and user trust.",
     rules: [
-      "Must meet regulatory deadlines when they exist.",
-      "Prefer shipping user-facing value when risk is low.",
-      "Avoid risky changes right before high-traffic events.",
-      "Never ignore known security vulnerabilities."
+      "Must not exceed agreed error budget for any core API.",
+      "Never roll out to 100% traffic without a staged plan.",
+      "Must provide a rollback path for every experiment.",
+      "Avoid releasing changes during peak traffic windows."
     ].join("\n"),
-    context:
-      "Upcoming marketing launch in 3 days. One known security bug marked as medium. Product is pushing for a new feature demo. No explicit regulatory dates mentioned."
+    context: [
+      "Model improves click-through rate in A/B tests.",
+      "Baseline latency is already close to SLO for some regions.",
+      "Several downstream teams consume the new signal."
+    ].join("\n")
   }
 };
 
-// --- Utility: HTML helpers ---------------------------------------------------
+// --------- DOM references ---------
 
-function clearList(listEl) {
-  while (listEl.firstChild) {
-    listEl.removeChild(listEl.firstChild);
-  }
-}
+const scenarioSelect = document.getElementById("scenario-select");
+const loadScenarioBtn = document.getElementById("load-scenario-btn");
+const runAgentBtn = document.getElementById("run-agent");
 
-function addListItem(listEl, text) {
-  const li = document.createElement("li");
-  li.textContent = text;
-  listEl.appendChild(li);
-}
+const taskInput = document.getElementById("task-input");
+const rulesInput = document.getElementById("rules-input");
+const contextInput = document.getElementById("context-input");
+const driftCheckbox = document.getElementById("simulate-drift");
+const parseStatus = document.getElementById("parse-status");
 
-// --- Parsing helpers ---------------------------------------------------------
+// Right side
+const summaryBadge = document.getElementById("summary-badge");
+const summaryBadgeLabel = document.getElementById("summary-badge-label");
+const interpretedTaskEl = document.getElementById("interpreted-task");
+const rulesAppliedEl = document.getElementById("rules-applied");
+const contextSignalsEl = document.getElementById("context-signals");
+const decisionEl = document.getElementById("decision");
+const traceEl = document.getElementById("raw-trace");
 
-function extractLines(text) {
-  return text
+// --------- Helpers ---------
+
+function linesFromTextarea(value) {
+  return value
     .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
 }
 
-function classifyRules(lines) {
-  const hard = [];
-  const soft = [];
-
-  lines.forEach((line) => {
-    const lower = line.toLowerCase();
-    if (
-      lower.includes("must") ||
-      lower.includes("never") ||
-      lower.includes("cannot") ||
-      lower.includes("can't") ||
-      lower.includes("do not") ||
-      lower.includes("don't") ||
-      lower.includes("avoid")
-    ) {
-      hard.push(line);
-    } else {
-      soft.push(line);
-    }
-  });
-
-  return { hard, soft };
+function setBadgeIdle() {
+  summaryBadge.className = "summary-badge summary-badge-idle";
+  summaryBadgeLabel.textContent = "Agent has not been run yet.";
 }
 
-function extractSignalsFromContext(context) {
-  const lower = context.toLowerCase();
-  const signals = [];
-
-  if (lower.includes("p1") || lower.includes("sev1") || lower.includes("severity 1")) {
-    signals.push("High-severity incident present (P1/Sev1).");
-  }
-  if (lower.includes("p2") || lower.includes("sev2")) {
-    signals.push("Medium-severity incident present (P2/Sev2).");
-  }
-  if (lower.includes("sla")) {
-    signals.push("Explicit SLA or response-time constraint mentioned.");
-  }
-  if (lower.includes("traffic")) {
-    signals.push("Traffic conditions are relevant (load/peak).");
-  }
-  if (lower.includes("launch") || lower.includes("release") || lower.includes("demo")) {
-    signals.push("Upcoming launch/release pressure.");
-  }
-  if (lower.includes("security") || lower.includes("vulnerability")) {
-    signals.push("Security risk present in context.");
-  }
-  if (lower.includes("internal") || lower.includes("feature")) {
-    signals.push("Requests or pressure related to features/internal work.");
-  }
-
-  if (signals.length === 0 && context.trim().length > 0) {
-    signals.push("Context provided but no obvious high-signal keywords detected.");
-  }
-
-  return signals;
+function setBadgeStable() {
+  summaryBadge.className = "summary-badge summary-badge-ok";
+  summaryBadgeLabel.textContent = "Stability-first behavior.";
 }
 
-function inferTaskFocus(task) {
-  const lower = task.toLowerCase();
-  const focus = [];
-
-  if (lower.includes("incident") || lower.includes("on-call") || lower.includes("alert")) {
-    focus.push("Operational / incident management.");
-  }
-  if (lower.includes("feature") || lower.includes("sprint") || lower.includes("backlog")) {
-    focus.push("Feature planning / delivery.");
-  }
-  if (lower.includes("priority") || lower.includes("prioritize")) {
-    focus.push("Priority setting / ordering work.");
-  }
-  if (lower.includes("decide") || lower.includes("choose")) {
-    focus.push("Decision-making / strategy.");
-  }
-
-  if (focus.length === 0 && task.trim().length > 0) {
-    focus.push("General task with no specific domain keywords detected.");
-  }
-
-  return focus;
+function setBadgeDrifted() {
+  summaryBadge.className = "summary-badge summary-badge-drifted";
+  summaryBadgeLabel.textContent = "Drifted behavior simulated.";
 }
 
-// --- Behavior classification --------------------------------------------------
+// --------- Scenario loading ---------
 
-function classifyBehavior({ hardRules, softRules, signals, taskFocus, drift }) {
-  let mode = "balanced";
-  let style = "neutral";
-  const tags = [];
-
-  const hasProdProtection = hardRules.some((r) =>
-    r.toLowerCase().includes("protect production")
-  );
-  const hasNeverIgnoreP1 = hardRules.some(
-    (r) =>
-      r.toLowerCase().includes("never ignore") &&
-      r.toLowerCase().includes("p1")
-  );
-  const hasSecurityRule = hardRules.some((r) =>
-    r.toLowerCase().includes("security")
-  );
-  const hasShipValue = softRules.some(
-    (r) =>
-      r.toLowerCase().includes("ship") ||
-      r.toLowerCase().includes("user-facing")
-  );
-
-  const hasLaunchPressure = signals.some((s) =>
-    s.toLowerCase().includes("launch")
-  );
-  const hasHighSeverity = signals.some((s) =>
-    s.toLowerCase().includes("high-severity")
-  );
-
-  if (hasHighSeverity || hasProdProtection || hasNeverIgnoreP1 || hasSecurityRule) {
-    mode = "stability-first";
-  }
-  if (hasShipValue && !hasHighSeverity && !hasSecurityRule && !hasProdProtection) {
-    mode = "delivery-first";
-  }
-
-  if (mode === "stability-first") {
-    tags.push("risk-aware", "defensive");
-  } else if (mode === "delivery-first") {
-    tags.push("speed-biased");
-  } else {
-    tags.push("balanced");
-  }
-
-  if (hasLaunchPressure && hasShipValue) {
-    style = "conflicted";
-  } else if (drift) {
-    style = "drifted";
-  } else if (mode === "stability-first") {
-    style = "cautious";
-  } else if (mode === "delivery-first") {
-    style = "assertive";
-  }
-
-  return { mode, style, tags };
-}
-
-// --- Agent simulation --------------------------------------------------------
-
-function simulateAgent(task, rulesText, context, simulateDrift) {
-  const traceLines = [];
-
-  const ruleLines = extractLines(rulesText);
-  const { hard: hardRules, soft: softRulesRaw } = classifyRules(ruleLines);
-  let softRules = [...softRulesRaw];
-
-  const taskFocus = inferTaskFocus(task);
-  const signals = extractSignalsFromContext(context);
-
-  traceLines.push("Step 1 — Read task:");
-  traceLines.push(`  "${task.trim() || "(empty task)"}"`);
-  traceLines.push("");
-
-  traceLines.push("Step 2 — Parse rules into hard vs soft constraints:");
-  if (hardRules.length === 0 && softRules.length === 0) {
-    traceLines.push("  No rules specified.");
-  } else {
-    if (hardRules.length) {
-      traceLines.push("  Hard constraints:");
-      hardRules.forEach((r) => traceLines.push("    - " + r));
-    }
-    if (softRules.length) {
-      traceLines.push("  Soft preferences:");
-      softRules.forEach((r) => traceLines.push("    - " + r));
-    }
-  }
-  traceLines.push("");
-
-  let driftNote = null;
-  if (simulateDrift && softRules.length > 0) {
-    const dropped = softRules[softRules.length - 1];
-    softRules = softRules.slice(0, -1);
-    driftNote = `Simulated drift: agent ignores soft rule "${dropped}".`;
-    traceLines.push("Step 3 — Apply drift:");
-    traceLines.push("  " + driftNote);
-    traceLines.push("");
-  }
-
-  traceLines.push("Step 4 — Interpret task focus:");
-  if (taskFocus.length) {
-    taskFocus.forEach((f) => traceLines.push("  - " + f));
-  }
-  traceLines.push("");
-
-  traceLines.push("Step 5 — Extract context signals:");
-  if (signals.length) {
-    signals.forEach((s) => traceLines.push("  - " + s));
-  } else {
-    traceLines.push("  - No notable signals found.");
-  }
-  traceLines.push("");
-
-  const behavior = classifyBehavior({
-    hardRules,
-    softRules,
-    signals,
-    taskFocus,
-    drift: !!driftNote
-  });
-
-  // Decision heuristic
-  let decisionSummary = "";
-  const lowerTask = task.toLowerCase();
-
-  if (behavior.mode === "stability-first") {
-    if (signals.some((s) => s.toLowerCase().includes("high-severity"))) {
-      decisionSummary =
-        "Treat the high-severity incident as the top priority and address it before anything else.";
-    } else if (signals.some((s) => s.toLowerCase().includes("security"))) {
-      decisionSummary =
-        "Focus on reducing security risk before pursuing new feature work.";
-    } else {
-      decisionSummary =
-        "Keep risk low: choose work that has minimal impact on production stability.";
-    }
-  } else if (behavior.mode === "delivery-first") {
-    if (lowerTask.includes("sprint") || lowerTask.includes("feature")) {
-      decisionSummary =
-        "Prioritize shipping user-visible feature work while monitoring for new risks.";
-    } else {
-      decisionSummary =
-        "Bias toward tasks that create visible progress or user value.";
-    }
-  } else {
-    decisionSummary =
-      "Balance stability and delivery: address any obvious risks, then pick the highest-value task.";
-  }
-
-  traceLines.push("Step 6 — Choose action:");
-  traceLines.push("  " + decisionSummary);
-  traceLines.push("");
-  traceLines.push("Step 7 — Behavior classification:");
-  traceLines.push("  Mode: " + behavior.mode);
-  traceLines.push("  Style: " + behavior.style);
-  traceLines.push("  Tags: " + behavior.tags.join(", "));
-
-  if (driftNote) {
-    traceLines.push("");
-    traceLines.push("Drift Note:");
-    traceLines.push("  " + driftNote);
-  }
-
-  return {
-    hardRules,
-    softRules,
-    signals,
-    taskFocus,
-    behavior,
-    decisionSummary,
-    driftNote,
-    trace: traceLines.join("\n")
-  };
-}
-
-// --- UI glue -----------------------------------------------------------------
-
-function renderSummary(behavior, driftNote) {
-  summaryEl.innerHTML = "";
-
-  const badge = document.createElement("div");
-  badge.className = "summary-badge";
-
-  const modePill = document.createElement("span");
-  modePill.className = "summary-pill summary-pill-mode";
-  modePill.textContent =
-    behavior.mode === "stability-first"
-      ? "Stability-first"
-      : behavior.mode === "delivery-first"
-      ? "Delivery-first"
-      : "Balanced";
-
-  const stylePill = document.createElement("span");
-  stylePill.className = "summary-pill summary-pill-style";
-  stylePill.textContent =
-    behavior.style.charAt(0).toUpperCase() + behavior.style.slice(1);
-
-  const textSpan = document.createElement("span");
-  const modeLabel =
-    behavior.mode === "stability-first"
-      ? "Protects stability before speed."
-      : behavior.mode === "delivery-first"
-      ? "Optimizes for speed and user-visible progress."
-      : "Balances stability and delivery based on context.";
-  textSpan.textContent = modeLabel;
-
-  badge.appendChild(modePill);
-  badge.appendChild(stylePill);
-  badge.appendChild(textSpan);
-
-  if (driftNote) {
-    const driftSpan = document.createElement("span");
-    driftSpan.className = "summary-pill summary-pill-mode";
-    driftSpan.textContent = "Drift simulated";
-    badge.appendChild(driftSpan);
-  }
-
-  summaryEl.appendChild(badge);
-}
-
-function renderLists(result) {
-  clearList(taskListEl);
-  clearList(rulesListEl);
-  clearList(contextListEl);
-  clearList(decisionListEl);
-
-  // Task interpretation
-  if (result.taskFocus.length === 0) {
-    addListItem(taskListEl, "No specific task focus detected.");
-  } else {
-    result.taskFocus.forEach((f) => addListItem(taskListEl, f));
-  }
-
-  // Rules
-  if (result.hardRules.length === 0 && result.softRules.length === 0) {
-    addListItem(rulesListEl, "No rules provided.");
-  } else {
-    if (result.hardRules.length) {
-      addListItem(rulesListEl, "Hard constraints:");
-      result.hardRules.forEach((r) => addListItem(rulesListEl, "• " + r));
-    }
-    if (result.softRules.length) {
-      addListItem(rulesListEl, "Soft preferences:");
-      result.softRules.forEach((r) => addListItem(rulesListEl, "• " + r));
-    }
-  }
-
-  // Context signals
-  if (result.signals.length === 0) {
-    addListItem(contextListEl, "No notable signals found in context.");
-  } else {
-    result.signals.forEach((s) => addListItem(contextListEl, s));
-  }
-
-  // Decision & rationale
-  addListItem(decisionListEl, result.decisionSummary);
-  const tagsLine = "Behavior tags: " + result.behavior.tags.join(", ");
-  addListItem(decisionListEl, tagsLine);
-}
-
-// Scenario loading
 loadScenarioBtn.addEventListener("click", () => {
-  const value = scenarioSelect.value;
+  const key = scenarioSelect.value;
 
-  if (value === "none") {
+  if (key === "blank" || !SCENARIOS[key]) {
     taskInput.value = "";
     rulesInput.value = "";
     contextInput.value = "";
-    runStatusEl.textContent = "Cleared fields for a blank scenario.";
+    parseStatus.textContent = "Blank scenario loaded.";
+    setBadgeIdle();
     return;
   }
 
-  const scenario = SCENARIOS[value];
-  if (!scenario) {
-    runStatusEl.textContent = "Unknown scenario selected.";
-    return;
-  }
-
-  taskInput.value = scenario.task;
-  rulesInput.value = scenario.rules;
-  contextInput.value = scenario.context;
-  runStatusEl.textContent = "Scenario loaded. Adjust as needed, then run the agent.";
+  const s = SCENARIOS[key];
+  taskInput.value = s.task;
+  rulesInput.value = s.rules;
+  contextInput.value = s.context;
+  parseStatus.textContent = "Scenario loaded. Click Run Agent to see behavior.";
+  setBadgeIdle();
 });
 
-// Run agent
+// --------- Run Agent ---------
+
 runAgentBtn.addEventListener("click", () => {
   const task = taskInput.value.trim();
-  const rulesText = rulesInput.value;
-  const context = contextInput.value;
+  const rules = linesFromTextarea(rulesInput.value);
+  const ctx = linesFromTextarea(contextInput.value);
+  const drifted = driftCheckbox.checked;
 
-  if (!task && !rulesText && !context) {
-    runStatusEl.textContent = "Add a task, rules, or context before running the agent.";
+  if (!task) {
+    parseStatus.textContent = "Please describe a task before running the agent.";
     return;
   }
 
-  const simulateDrift = driftCheckbox.checked;
+  // Interpreted task: we keep this simple and textual
+  interpretedTaskEl.textContent = task;
 
-  const result = simulateAgent(task, rulesText, context, simulateDrift);
+  // Rules applied list
+  rulesAppliedEl.innerHTML = "";
+  if (rules.length === 0) {
+    const li = document.createElement("li");
+    li.textContent = "No explicit rules provided.";
+    rulesAppliedEl.appendChild(li);
+  } else {
+    rules.forEach((r) => {
+      const li = document.createElement("li");
+      li.textContent = r;
+      rulesAppliedEl.appendChild(li);
+    });
+  }
 
-  renderSummary(result.behavior, result.driftNote);
-  renderLists(result);
+  // Context & drift signals list
+  contextSignalsEl.innerHTML = "";
+  if (ctx.length === 0) {
+    const li = document.createElement("li");
+    li.textContent = "No context signals provided.";
+    contextSignalsEl.appendChild(li);
+  } else {
+    ctx.forEach((c) => {
+      const li = document.createElement("li");
+      li.textContent = c;
+      contextSignalsEl.appendChild(li);
+    });
+  }
 
-  rawTraceEl.textContent = result.trace;
-  runStatusEl.textContent = "Agent run completed.";
+  // Decide behavior style
+  if (drifted) {
+    setBadgeDrifted();
+    decisionEl.textContent =
+      "Under drift, the agent over-weights local or short-term signals. " +
+      "It may chase speed or visible progress, even when that conflicts with hard constraints.";
+  } else {
+    setBadgeStable();
+    decisionEl.textContent =
+      "With stability-first parameters, the agent prioritizes protecting core constraints " +
+      "and incident impact before pursuing feature work or secondary goals.";
+  }
+
+  // Build execution trace
+  const traceLines = [];
+
+  traceLines.push("STEP 1 — Read task");
+  traceLines.push(`  • Task: ${task}`);
+  traceLines.push("");
+
+  traceLines.push("STEP 2 — Parse rules & constraints");
+  if (rules.length === 0) {
+    traceLines.push("  • No explicit rules. Agent falls back to default safety behavior.");
+  } else {
+    rules.forEach((r, idx) => traceLines.push(`  • Rule ${idx + 1}: ${r}`));
+  }
+  traceLines.push("");
+
+  traceLines.push("STEP 3 — Parse context & drift signals");
+  if (ctx.length === 0) {
+    traceLines.push("  • No context provided.");
+  } else {
+    ctx.forEach((c, idx) => traceLines.push(`  • Signal ${idx + 1}: ${c}`));
+  }
+  traceLines.push("");
+
+  traceLines.push("STEP 4 — Behavior mode");
+  traceLines.push(
+    drifted
+      ? "  • Mode: DRIFTED — prioritizing short-term or misaligned objectives."
+      : "  • Mode: STABILITY-FIRST — prioritizing safety and reliability constraints."
+  );
+  traceLines.push("");
+
+  traceLines.push("STEP 5 — Decision sketch");
+  traceLines.push(
+    drifted
+      ? "  • Likely to favor visible progress (e.g., moving feature work forward) even with unresolved risk."
+      : "  • Likely to focus on the highest-impact risk (e.g., P1 or error-budget breach) before other work."
+  );
+
+  traceEl.textContent = traceLines.join("\n");
+
+  parseStatus.textContent = "Agent run completed.";
 });

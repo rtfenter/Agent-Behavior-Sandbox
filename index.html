@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Agent Behavior Sandbox</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="page-header">
+    <div class="page-header-inner">
+      <h1>Agent Behavior Sandbox</h1>
+      <p class="tagline">
+        Explore how a simple agent interprets tasks, applies rules, and changes behavior as context drifts.
+      </p>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Left panel: Inputs -->
+    <section class="panel panel-input">
+      <div class="panel-header">
+        <h2>Agent Setup</h2>
+        <div class="panel-actions">
+          <label for="scenario-select" class="scenario-label">Scenario:</label>
+          <select id="scenario-select" class="scenario-select">
+            <option value="none">Start blank</option>
+            <option value="triage">Example – On-call Triage</option>
+            <option value="conflict">Example – Conflicting Priorities</option>
+          </select>
+          <button id="load-scenario-btn" class="btn btn-secondary">Load Scenario</button>
+        </div>
+      </div>
+
+      <p class="help-text">
+        Describe a task, the rules the agent must follow, and the current context.  
+        Then click <strong>Run Agent</strong> to see how it behaves.
+      </p>
+
+      <div class="field-group">
+        <label for="task-input" class="field-label">Task</label>
+        <p class="field-help">
+          What is the agent being asked to do?
+        </p>
+        <textarea
+          id="task-input"
+          class="text-input"
+          rows="4"
+          spellcheck="false"
+          placeholder="Example: Prioritize incidents in the on-call queue for the next 2 hours."
+        ></textarea>
+      </div>
+
+      <div class="field-group">
+        <label for="rules-input" class="field-label">Rules &amp; Constraints</label>
+        <p class="field-help">
+          One rule per line. Use words like &quot;must&quot;, &quot;never&quot;, &quot;cannot&quot;, or &quot;avoid&quot; for hard constraints.
+        </p>
+        <textarea
+          id="rules-input"
+          class="text-input"
+          rows="6"
+          spellcheck="false"
+          placeholder="- Must protect production traffic first&#10;- Never deploy unreviewed code&#10;- Prefer resolving high-severity issues before low-severity ones"
+        ></textarea>
+      </div>
+
+      <div class="field-group">
+        <label for="context-input" class="field-label">Context &amp; Signals</label>
+        <p class="field-help">
+          Environment, signals, and any drift — SLAs, user impact, outages, deadlines, noise.
+        </p>
+        <textarea
+          id="context-input"
+          class="text-input"
+          rows="5"
+          spellcheck="false"
+          placeholder="Example: High traffic. One P1 incident impacting customers. Several low-priority feature requests in the backlog."
+        ></textarea>
+      </div>
+
+      <div class="field-group field-inline">
+        <label class="checkbox-label">
+          <input type="checkbox" id="simulate-drift" />
+          <span>Simulate drift (agent ignores one soft rule)</span>
+        </label>
+      </div>
+
+      <div class="panel-footer">
+        <button id="run-agent-btn" class="btn btn-primary">Run Agent</button>
+        <span id="run-status" class="parse-status" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <!-- Right panel: Results -->
+    <section class="panel panel-results">
+      <div class="panel-header">
+        <h2>Behavior Summary</h2>
+      </div>
+
+      <div id="summary" class="summary">
+        <div class="summary-badge summary-badge-idle">
+          Agent has not been run yet.
+        </div>
+      </div>
+
+      <div class="checks-grid">
+        <div class="check-group">
+          <h3>Interpreted Task</h3>
+          <ul id="task-interpretation" class="issues-list"></ul>
+        </div>
+
+        <div class="check-group">
+          <h3>Rules &amp; Constraints Applied</h3>
+          <ul id="rules-applied" class="issues-list"></ul>
+        </div>
+
+        <div class="check-group">
+          <h3>Context &amp; Drift Signals</h3>
+          <ul id="context-signals" class="issues-list"></ul>
+        </div>
+
+        <div class="check-group">
+          <h3>Decision &amp; Rationale</h3>
+          <ul id="decision-rationale" class="issues-list"></ul>
+        </div>
+      </div>
+
+      <div class="raw-output">
+        <h3>Execution Trace</h3>
+        <pre id="raw-trace"></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <p>
+      Part of the
+      <a
+        href="https://github.com/rtfenter/Applied-Intelligence-Systems-Series"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Applied Intelligence Systems Series
+      </a>.
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

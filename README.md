@@ -29,10 +29,8 @@ The first version will include:
 
 ## Demo Screenshot
 
-<!-- Replace this with a real screenshot link after deployment -->
-<!-- Example:
-<img width="1200" alt="Screenshot of Agent Behavior Sandbox" src="https://github.com/user-attachments/assets/your-image-id-here" />
--->
+<img width="2804" height="2098" alt="Screenshot 2025-11-23 at 10-57-47 Agent Behavior Sandbox" src="https://github.com/user-attachments/assets/1e0f1da3-f9b2-4242-b0d9-7f96d2b80432" />
+
 
 ---
 

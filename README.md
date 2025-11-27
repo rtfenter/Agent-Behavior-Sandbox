@@ -31,11 +31,11 @@ The first version will include:
 
 <img width="2804" height="2098" alt="Screenshot 2025-11-23 at 10-57-47 Agent Behavior Sandbox" src="https://github.com/user-attachments/assets/1e0f1da3-f9b2-4242-b0d9-7f96d2b80432" />
 
-
 ---
 
-## Agent Behavior Flow Diagram
+## Behavior Flow Diagram
 
+```
     [Task + Context + Rules]
                 |
                 v
@@ -61,6 +61,7 @@ The first version will include:
                 v
            Behavior Log / Trace
     (what the agent did and why)
+```
 
 ---
 
@@ -89,7 +90,8 @@ In production systems, tasks arrive with partial context (user state, environmen
 Policies, guardrails, and business rules limit what an agent is allowed to do. Real engines implement this as policy checks, allow/deny lists, and safety filters.
 
 ### Interpretation Layer  
-Before acting, intelligent systems interpret inputs: “what does this mean?” This is where prompt parsing, schema mapping, or semantic understanding lives.
+Before acting, intelligent systems interpret inputs: “what does this mean?”  
+This is where prompt parsing, schema mapping, or semantic understanding lives.
 
 ### Decision Selection  
 Agents often have multiple possible actions. Selection might depend on priority, cost, risk, or external constraints.
@@ -98,7 +100,8 @@ Agents often have multiple possible actions. Selection might depend on priority,
 A good system exposes why and how decisions were made. Traces are critical for debugging, audits, and governance.
 
 ### Drift & Noise  
-When inputs, rules, or context drift slightly, behavior can shift dramatically. This sandbox makes that shift visible at a small scale.
+When inputs, rules, or context drift slightly, behavior can shift dramatically.  
+This sandbox makes that shift visible at a small scale.
 
 This tool is a legible micro-version of how agent-like systems work under the hood.
 
@@ -117,7 +120,6 @@ MVP planned.
 This sandbox will focus on core mechanics required to demonstrate agent behavior under different rules and contexts, not on building a full production agent framework.
 
 ---
-
 ## Local Use
 
 Everything will run client-side.
